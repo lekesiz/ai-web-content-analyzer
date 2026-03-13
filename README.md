@@ -2,7 +2,7 @@
 
 A web-based system that analyzes website content and provides insights on SEO quality, readability, and content structure with AI-powered recommendations.
 
-Developed as part of **UE 6.5 -- Projet Tutoure (Licence Professionnelle LPDWCA)** at **Universite de Strasbourg**.
+Developed as part of **UE 6.5 -- Projet Tutore (Licence Professionnelle LPDWCA)** at **Universite de Strasbourg**.
 
 ---
 
@@ -21,13 +21,14 @@ Developed as part of **UE 6.5 -- Projet Tutoure (Licence Professionnelle LPDWCA)
 
 | Component | Technology |
 |-----------|-----------|
+| Frontend | **React 19** (Vite build tool) |
 | Backend | Python / Flask |
 | Database | SQLite / SQLAlchemy |
 | Scraping | BeautifulSoup4 / Requests |
 | AI | OpenAI GPT-4 (optional) |
-| Frontend | HTML / CSS / JavaScript |
 | Styling | Tailwind CSS (CDN) |
-| Charts | Chart.js |
+| Charts | Chart.js / react-chartjs-2 |
+| Routing | React Router v7 |
 | PDF Export | fpdf2 |
 
 ---
@@ -37,7 +38,8 @@ Developed as part of **UE 6.5 -- Projet Tutoure (Licence Professionnelle LPDWCA)
 ### Prerequisites
 
 - Python 3.10+
-- pip
+- Node.js 18+
+- npm
 
 ### Setup
 
@@ -46,12 +48,13 @@ Developed as part of **UE 6.5 -- Projet Tutoure (Licence Professionnelle LPDWCA)
 git clone https://github.com/lekesiz/ai-web-content-analyzer.git
 cd ai-web-content-analyzer
 
+# --- Backend Setup ---
 # Create virtual environment
 python3 -m venv venv
 source venv/bin/activate  # Linux/macOS
 # venv\Scripts\activate   # Windows
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
 # Copy environment file
@@ -60,21 +63,81 @@ cp .env.example .env
 # (Optional) Add your OpenAI API key to .env
 # OPENAI_API_KEY=sk-your-key-here
 
-# Initialize database and run
+# --- Frontend Setup ---
+cd frontend
+npm install
+npm run build
+cd ..
+
+# --- Run ---
 python run.py
 ```
 
 The application will be available at `http://127.0.0.1:5000`
 
+### Development Mode
+
+For frontend development with hot reload:
+
+```bash
+# Terminal 1: Start Flask backend
+python run.py
+
+# Terminal 2: Start Vite dev server
+cd frontend
+npm run dev
+```
+
+The Vite dev server runs on `http://localhost:3000` and proxies API requests to Flask.
+
 ---
 
-## Usage
+## React Frontend Architecture
 
-1. **Enter a URL** on the home page
-2. **Wait for analysis** (typically 2-5 seconds)
-3. **View results** including scores, SEO details, and issues
-4. **Export** results as JSON or PDF
-5. **Browse history** of past analyses
+The frontend is built as a **Single Page Application (SPA)** using React with Vite.
+
+### ES6 Features Used
+- `const` / `let` with block scoping
+- Template literals
+- Arrow functions
+- Destructuring (objects and arrays)
+- Spread operator (`...`)
+- ES6 modules (`import` / `export`)
+- Async/await
+- Classes (Chart.js integration)
+
+### React Concepts Demonstrated
+- **Functional Components** with JSX
+- **useState** hook for state management
+- **useEffect** hook for side effects and API calls
+- **Props** for component communication
+- **React Router** for client-side navigation
+- **Conditional rendering** and list rendering with `map()`
+- **Event handling** (forms, clicks)
+- **Component composition** (Navbar, Footer, ScoreCard, etc.)
+
+### Component Structure
+
+```
+frontend/src/
+├── main.jsx              # Entry point (createRoot)
+├── App.jsx               # Router setup
+├── components/
+│   ├── Navbar.jsx        # Navigation with active link highlighting
+│   ├── Footer.jsx        # Footer with project info
+│   ├── ScoreCard.jsx     # Score display with progress bar
+│   ├── ScoreChart.jsx    # Doughnut chart (Chart.js)
+│   ├── FeatureCard.jsx   # Feature card with icon/title/description
+│   ├── LoadingSpinner.jsx # Reusable loading indicator
+│   └── Notification.jsx  # Toast notification with auto-dismiss
+├── pages/
+│   ├── Home.jsx          # URL input form, recent analyses
+│   ├── Results.jsx       # Full analysis results dashboard
+│   ├── History.jsx       # Searchable/sortable analysis history
+│   └── About.jsx         # Project information
+└── services/
+    └── api.js            # API service module (fetch wrapper)
+```
 
 ---
 
@@ -82,10 +145,7 @@ The application will be available at `http://127.0.0.1:5000`
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| GET | `/` | Home page |
-| GET | `/about` | About the project |
-| GET | `/history` | Analysis history page |
-| GET | `/results/<id>` | Results dashboard |
+| GET | `/` | React SPA (all frontend routes) |
 | POST | `/api/analyze` | Run analysis (`{"url": "..."}`) |
 | GET | `/api/analysis/<id>` | Get analysis results |
 | DELETE | `/api/analysis/<id>` | Delete an analysis |
@@ -99,25 +159,32 @@ The application will be available at `http://127.0.0.1:5000`
 
 ```
 ai-web-content-analyzer/
-├── app/
-│   ├── __init__.py          # Flask app factory
-│   ├── config.py            # Configuration
-│   ├── models.py            # Database models
+├── frontend/                   # React SPA (Vite)
+│   ├── src/
+│   │   ├── main.jsx           # React entry point
+│   │   ├── App.jsx            # Router & layout
+│   │   ├── components/        # Reusable UI components
+│   │   ├── pages/             # Page components
+│   │   └── services/          # API service layer
+│   ├── package.json
+│   └── vite.config.js
+├── app/                        # Flask backend
+│   ├── __init__.py            # App factory + React serving
+│   ├── config.py              # Configuration
+│   ├── models.py              # Database models
 │   ├── routes/
-│   │   ├── main.py          # Home, About pages
-│   │   ├── analysis.py      # Analysis API
-│   │   └── history.py       # History pages & API
+│   │   ├── analysis.py        # Analysis API
+│   │   └── history.py         # History API
 │   ├── services/
-│   │   ├── scraper.py       # Web scraping engine
-│   │   ├── seo_analyzer.py  # SEO analysis (10+ checks)
-│   │   ├── content_analyzer.py  # Readability analysis
-│   │   ├── ai_analyzer.py   # OpenAI GPT integration
-│   │   └── report_generator.py  # PDF/JSON export
-│   ├── static/js/           # Frontend JavaScript
-│   └── templates/           # HTML templates
-├── tests/                   # Test suite
+│   │   ├── scraper.py         # Web scraping engine
+│   │   ├── seo_analyzer.py    # SEO analysis (10+ checks)
+│   │   ├── content_analyzer.py # Readability analysis
+│   │   ├── ai_analyzer.py     # OpenAI GPT integration
+│   │   └── report_generator.py # PDF/JSON export
+│   └── static/react/          # Built React app (generated)
+├── tests/                      # Test suite
 ├── requirements.txt
-├── run.py                   # Entry point
+├── run.py                      # Entry point
 └── .env.example
 ```
 
@@ -130,7 +197,7 @@ ai-web-content-analyzer/
 3. **Content Analysis**: Calculate readability scores, detect language, evaluate structure
 4. **AI Analysis**: Generate recommendations using OpenAI GPT-4 (optional)
 5. **Scoring**: Compute weighted overall score and save to SQLite database
-6. **Presentation**: Display results with charts and export options
+6. **Presentation**: React SPA displays results with Chart.js visualizations and export options
 
 ---
 
@@ -152,8 +219,11 @@ Environment variables (`.env` file):
 # Run tests
 pytest tests/ -v
 
-# Lint check
+# Lint check (backend)
 flake8 app/ tests/
+
+# Lint check (frontend)
+cd frontend && npm run lint
 ```
 
 ---

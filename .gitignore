@@ -42,3 +42,6 @@ htmlcov/
 
 # Tailwind (generated)
 app/static/css/output.css
+
+# React build output is committed so Flask can serve it directly
+# To rebuild: cd frontend && npm run build

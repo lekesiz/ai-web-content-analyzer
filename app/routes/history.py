@@ -1,20 +1,10 @@
-"""History routes for browsing past analyses."""
+"""History API routes for browsing past analyses."""
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, request, jsonify
 from app import db
 from app.models import Analysis
 
 history_bp = Blueprint('history', __name__)
-
-
-@history_bp.route('/history')
-def history_page():
-    return render_template('history.html')
-
-
-@history_bp.route('/results/<int:analysis_id>')
-def results_page(analysis_id):
-    return render_template('results.html', analysis_id=analysis_id)
 
 
 @history_bp.route('/api/history')
