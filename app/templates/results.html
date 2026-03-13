@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - AI Web Analyzer{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8" id="results-container" data-analysis-id="{{ analysis_id }}">
+
+    <!-- Loading State -->
+    <div id="results-loading" class="text-center py-20">
+        <svg class="animate-spin w-12 h-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-gray-500 text-lg">Loading analysis results...</p>
+    </div>
+
+    <!-- Results Content (hidden until loaded) -->
+    <div id="results-content" class="hidden">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">Analysis Results</h1>
+                <p id="result-url" class="text-gray-500 text-sm break-all"></p>
+                <p id="result-date" class="text-gray-400 text-xs mt-1"></p>
+            </div>
+            <div class="flex gap-2 mt-4 sm:mt-0">
+                <a id="export-json-btn" href="#" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition">Export JSON</a>
+                <a id="export-pdf-btn" href="#" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition">Export PDF</a>
+                <button onclick="window.location.href='/'" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition">New Analysis</button>
+            </div>
+        </div>
+
+        <!-- Score Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Overall Score -->
+            <div class="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center">
+                <h3 class="text-sm font-medium text-gray-500 mb-3">Overall Score</h3>
+                <div class="relative w-32 h-32">
+                    <canvas id="overall-score-chart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="overall-score-text" class="text-3xl font-bold"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- SEO Score -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">SEO Score</h3>
+                <div id="seo-score-text" class="text-3xl font-bold mb-2"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="seo-score-bar" class="h-2 rounded-full transition-all duration-500"></div>
+                </div>
+            </div>
+            <!-- Content Score -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Content Score</h3>
+                <div id="content-score-text" class="text-3xl font-bold mb-2"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="content-score-bar" class="h-2 rounded-full transition-all duration-500"></div>
+                </div>
+            </div>
+            <!-- Technical Score -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Technical Score</h3>
+                <div id="technical-score-text" class="text-3xl font-bold mb-2"></div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="technical-score-bar" class="h-2 rounded-full transition-all duration-500"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Details -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">SEO Analysis Details</h2>
+            <div id="seo-details-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Content Analysis -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Content Analysis</h2>
+            <div id="content-details" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- Issues -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Issues Found</h2>
+            <div id="issues-list" class="space-y-3"></div>
+            <p id="no-issues" class="text-gray-400 hidden">No issues found. Great job!</p>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">AI Recommendations</h2>
+            <div id="ai-recommendations" class="space-y-4"></div>
+            <p id="no-ai" class="text-gray-400 hidden">AI analysis not available. Set OPENAI_API_KEY to enable.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+{% endblock %}
