@@ -56,7 +56,7 @@ class ReportGenerator:
             ('Title', analysis_data.get('page_title', 'N/A')),
             ('Word Count', str(analysis_data.get('word_count', 0))),
             ('Language', (analysis_data.get('language') or 'N/A').upper()),
-            ('Response Time', f'{analysis_data.get("response_time", 0):.2f}s'),
+            ('Response Time', f'{(analysis_data.get("response_time") or 0):.2f}s'),
         ]
         for label, value in info_items:
             pdf.set_font('Helvetica', 'B', 10)
