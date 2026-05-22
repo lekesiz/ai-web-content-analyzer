@@ -27,7 +27,9 @@ class ReportGenerator:
         pdf.set_font('Helvetica', '', 10)
         pdf.set_text_color(100, 100, 100)
         url = analysis_data.get('url', 'N/A')
-        pdf.cell(0, 6, f'URL: {url}', new_x='LMARGIN', new_y='NEXT')
+        # FIX: Use multi_cell so long URLs wrap onto multiple lines
+        # instead of being silently truncated by a single-line cell.
+        pdf.multi_cell(0, 6, f'URL: {url}', new_x='LMARGIN', new_y='NEXT')
         timestamp = analysis_data.get('timestamp', 'N/A')
         pdf.cell(0, 6, f'Date: {timestamp}', new_x='LMARGIN', new_y='NEXT')
         pdf.ln(6)
@@ -62,7 +64,9 @@ class ReportGenerator:
             pdf.set_font('Helvetica', 'B', 10)
             pdf.cell(50, 7, f'{label}:', new_x='RIGHT')
             pdf.set_font('Helvetica', '', 10)
-            pdf.cell(0, 7, str(value)[:80], new_x='LMARGIN', new_y='NEXT')
+            # FIX: Use multi_cell for the value column so long titles
+            # (or any long string) wrap instead of being clipped.
+            pdf.multi_cell(0, 7, str(value), new_x='LMARGIN', new_y='NEXT')
         pdf.ln(4)
 
         # SEO Details
