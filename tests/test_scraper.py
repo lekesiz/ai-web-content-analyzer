@@ -211,11 +211,34 @@ class TestWebScraperParse:
         assert result['stylesheets_count'] == 1
 
     def test_empty_html(self):
+        # After the title-fallback fix, an empty body still produces a usable
+        # title (the hostname) rather than an empty string. See Suivi N°6 #3.
         html = '<html><body></body></html>'
         scraper = self._make_scraper_with_html(html)
         result = scraper.parse()
-        assert result['title'] == ''
+        assert result['title'] == 'example.com'  # fallback to hostname
         assert result['word_count'] == 0
+
+    def test_title_fallback_to_h1_when_no_title_tag(self):
+        """FIX (Suivi N°6 #3): missing <title> falls back to first <h1>."""
+        html = '<html><body><h1>Bienvenue sur Jardins Secrets</h1></body></html>'
+        scraper = self._make_scraper_with_html(html)
+        result = scraper.parse()
+        assert result['title'] == 'Bienvenue sur Jardins Secrets'
+
+    def test_title_fallback_chain_title_then_h1_then_host(self):
+        """Title wins over h1 when both are present."""
+        html = '<html><head><title>My Title</title></head><body><h1>An H1</h1></body></html>'
+        scraper = self._make_scraper_with_html(html)
+        result = scraper.parse()
+        assert result['title'] == 'My Title'
+
+    def test_title_fallback_empty_title_to_h1(self):
+        """An empty <title> tag still falls through to <h1>."""
+        html = '<html><head><title></title></head><body><h1>From H1</h1></body></html>'
+        scraper = self._make_scraper_with_html(html)
+        result = scraper.parse()
+        assert result['title'] == 'From H1'
 
     def test_parse_without_fetch_raises(self):
         scraper = WebScraper('https://example.com')

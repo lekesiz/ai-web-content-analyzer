@@ -189,8 +189,29 @@ class WebScraper:
     # --- Private extraction methods ---
 
     def _extract_title(self):
+        # FIX: Some pages (especially malformed or single-page apps) ship
+        # without a <title>. Previously this returned an empty string which
+        # crashed downstream consumers expecting a non-empty title (issue
+        # tracked in Suivi N°6). We now fall back to the first <h1>, then
+        # to the hostname so the analysis pipeline always has SOMETHING.
         tag = self.soup.find('title')
-        return tag.get_text(strip=True) if tag else ''
+        if tag:
+            title = tag.get_text(strip=True)
+            if title:
+                return title
+
+        # Fallback 1: first non-empty <h1>
+        for h1 in self.soup.find_all('h1'):
+            text = h1.get_text(strip=True)
+            if text:
+                return text
+
+        # Fallback 2: hostname of the analyzed URL
+        if self._parsed_url and self._parsed_url.netloc:
+            return self._parsed_url.netloc
+
+        # Last resort: the URL itself (always truthy if we got here)
+        return self.url or ''
 
     def _extract_meta(self, name):
         tag = self.soup.find('meta', attrs={'name': name})
