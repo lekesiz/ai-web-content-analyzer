@@ -37,10 +37,32 @@ class WebScraper:
         self.response = None
         self._parsed_url = None
 
+    # FIX: SSRF protection — block private / loopback / link-local hosts
+    # so the scraper cannot be used to probe internal networks. Also enforce
+    # a hard length limit (DoS protection) and reject malformed URLs early.
+    _MAX_URL_LENGTH = 2048
+    _BLOCKED_HOSTS = {
+        'localhost', '127.0.0.1', '0.0.0.0', '::1',
+        '169.254.169.254',  # AWS / cloud metadata
+    }
+    _BLOCKED_CIDR_PREFIXES = (
+        '10.', '192.168.',
+        '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.',
+        '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.',
+        '172.28.', '172.29.', '172.30.', '172.31.',
+        '169.254.',  # link-local
+    )
+
     def validate_url(self):
-        """Validate URL format and scheme."""
+        """Validate URL format and scheme. Hardened against SSRF / DoS."""
         if not self.url:
             raise InvalidURLError('URL is required')
+
+        # FIX: Bound the URL length to avoid pathological inputs (DoS).
+        if len(self.url) > self._MAX_URL_LENGTH:
+            raise InvalidURLError(
+                f'URL too long ({len(self.url)} chars, max {self._MAX_URL_LENGTH}).'
+            )
 
         # Add scheme if missing
         if not self.url.startswith(('http://', 'https://')):
@@ -49,9 +71,25 @@ class WebScraper:
         try:
             parsed = urlparse(self.url)
             if parsed.scheme not in ('http', 'https'):
-                raise InvalidURLError(f'Invalid scheme: {parsed.scheme}. Only HTTP/HTTPS allowed.')
+                raise InvalidURLError(
+                    f'Invalid scheme: {parsed.scheme}. Only HTTP/HTTPS allowed.'
+                )
             if not parsed.netloc:
                 raise InvalidURLError('Invalid URL: no domain found')
+
+            # FIX: SSRF — refuse loopback, private networks and cloud metadata.
+            host = (parsed.hostname or '').lower()
+            if not host:
+                raise InvalidURLError('Invalid URL: no host found')
+            if host in self._BLOCKED_HOSTS:
+                raise InvalidURLError(
+                    f'Refusing to scrape a loopback / metadata host: {host}'
+                )
+            if host.startswith(self._BLOCKED_CIDR_PREFIXES):
+                raise InvalidURLError(
+                    f'Refusing to scrape a private-network host: {host}'
+                )
+
             self._parsed_url = parsed
         except ValueError as e:
             raise InvalidURLError(f'Invalid URL: {e}')

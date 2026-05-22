@@ -46,6 +46,49 @@ class TestWebScraperValidation:
         assert scraper.validate_url() is True
 
 
+    # ----- FIX (Suivi N°6): URL validation hardening (SSRF / DoS) -----
+
+    def test_blocks_localhost(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('http://localhost/admin')
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_blocks_127_loopback(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('http://127.0.0.1:8000')
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_blocks_aws_metadata(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('http://169.254.169.254/latest/meta-data/')
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_blocks_private_network_10(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('http://10.0.0.1/')
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_blocks_private_network_192_168(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('http://192.168.1.1/router')
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_blocks_overly_long_url(self):
+        from app.services.scraper import InvalidURLError
+        scraper = WebScraper('https://example.com/' + 'a' * 3000)
+        with pytest.raises(InvalidURLError):
+            scraper.validate_url()
+
+    def test_public_url_still_works_after_hardening(self):
+        scraper = WebScraper('https://example.com/path?q=1')
+        assert scraper.validate_url() is True
+
+
 class TestWebScraperParse:
     """Tests for HTML parsing (no network calls)."""
 
