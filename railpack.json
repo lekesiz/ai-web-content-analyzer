@@ -1,6 +1,10 @@
 {
   "$schema": "https://schemas.railpack.com/railpack.json",
   "deploy": {
-    "startCommand": "gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    "startCommand": "gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
+    "variables": {
+      "SQLITE_DIR": "/tmp",
+      "FLASK_ENV": "production"
+    }
   }
 }
