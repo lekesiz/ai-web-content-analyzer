@@ -76,3 +76,4 @@ Resize Chrome de 1920 à 1024 : tout doit rester lisible. La police s'adapte aut
 ---
 
 *Produit le 22/05/2026 — Cowork.*
+
