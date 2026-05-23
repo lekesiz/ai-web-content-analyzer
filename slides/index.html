@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280, initial-scale=1">
+  <title>AI Web Content Analyzer — Soutenance — Mikail Lekesiz</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+
+  <style>
+    :root {
+      --accent: #3b82f6;
+      --accent2: #06b6d4;
+      --bg: #0b1220;
+    }
+    .reveal { background: var(--bg); }
+    .reveal h1, .reveal h2, .reveal h3 { color: var(--accent); text-shadow: none; letter-spacing: -0.02em; font-weight: 700; }
+    .reveal .accent { color: var(--accent2); }
+    .reveal section { text-align: left; }
+    .reveal section.center { text-align: center; }
+    .reveal .small { font-size: 0.6em; color: #94a3b8; }
+    .reveal .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--accent); color: white; font-size: 0.5em; font-weight: 600; }
+    .reveal .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+    .reveal .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .reveal .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+    .reveal .card { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 18px; }
+    .reveal .card h3 { color: var(--accent2); font-size: 0.7em; margin-top: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    .reveal .big-num { font-size: 2.5em; font-weight: 800; color: var(--accent); line-height: 1; }
+    .reveal table { font-size: 0.6em; }
+    .reveal pre { box-shadow: none; }
+    .reveal code { font-size: 0.85em; }
+    .reveal blockquote { border-left: 4px solid var(--accent); background: rgba(59,130,246,0.05); font-style: italic; padding: 12px 20px; }
+    .reveal .check { color: #10b981; }
+    .reveal .warn  { color: #f59e0b; }
+    .reveal .crit  { color: #ef4444; }
+    .footer { position: fixed; bottom: 8px; left: 16px; font-size: 0.5em; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Title -->
+      <section class="center" data-background-gradient="linear-gradient(135deg, #0b1220 0%, #1e3a8a 100%)">
+        <h1 style="font-size: 1.8em;">AI Web Content Analyzer</h1>
+        <h3 class="accent" style="margin-top: 0;">Audit automatisé augmenté par GPT-4</h3>
+        <p style="margin-top: 60px;"><strong>Mikail Lekesiz</strong></p>
+        <p class="small">Licence Professionnelle DWCA — Université de Strasbourg</p>
+        <p class="small">Tuteur : M. Eric Christoffel — Soutenance UE 6.5</p>
+        <p class="small" style="margin-top: 30px;">github.com/lekesiz/ai-web-content-analyzer</p>
+      </section>
+
+      <!-- Slide 2: Contexte & problème -->
+      <section>
+        <h2>Le constat</h2>
+        <div class="grid-2" style="margin-top: 30px;">
+          <div>
+            <ul>
+              <li>1,1 milliard de sites en 2026</li>
+              <li>Qualité <span class="warn">hétérogène</span> (SEO, accessibilité, perf)</li>
+              <li>Outils existants <span class="warn">en silos</span></li>
+              <li>Aucun n'intègre une critique éditoriale par IA</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Audit type aujourd'hui</h3>
+            <p style="font-size: 0.7em;">3 à 5 outils en parallèle → copier-coller manuel → 30 min par site</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Problématique -->
+      <section class="center">
+        <h2>Problématique</h2>
+        <blockquote style="font-size: 0.75em; margin: 40px auto; max-width: 80%;">
+          Comment construire un outil d'audit web qui produit, en moins de <span class="accent">30 secondes</span>,
+          un score global pondéré et des recommandations actionnables, en combinant des règles SEO classiques
+          et une évaluation contextuelle par <span class="accent">intelligence artificielle</span> ?
+        </blockquote>
+      </section>
+
+      <!-- Slide 4: Solution -->
+      <section>
+        <h2>La solution en 1 image</h2>
+        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px;">
+          <p style="color: #1e3a8a; font-size: 1.5em; margin: 0;"><strong>Score 78/100</strong></p>
+          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <span style="background:#3b82f6;color:white;padding:5px 12px;border-radius:6px;font-size:0.6em;">SEO 85</span>
+            <span style="background:#06b6d4;color:white;padding:5px 12px;border-radius:6px;font-size:0.6em;">Contenu 72</span>
+            <span style="background:#10b981;color:white;padding:5px 12px;border-radius:6px;font-size:0.6em;">Tech 90</span>
+            <span style="background:#8b5cf6;color:white;padding:5px 12px;border-radius:6px;font-size:0.6em;">IA 65</span>
+          </div>
+          <p style="color: #475569; font-size: 0.7em; margin-top: 15px;">+ 5 recommandations priorisées par GPT-4</p>
+        </div>
+        <p class="small center" style="margin-top: 20px; text-align: center;">Une URL → un score → des recommandations en 25 s.</p>
+      </section>
+
+      <!-- Slide 5: Cahier des charges -->
+      <section>
+        <h2>Cahier des charges (MoSCoW)</h2>
+        <table style="width: 100%; margin-top: 20px;">
+          <thead>
+            <tr><th>Priorité</th><th>Fonctionnalités retenues</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="pill" style="background:#ef4444">MUST</span></td><td>URL input, score pondéré, détail par dimension, recos IA, export PDF/JSON, historique</td></tr>
+            <tr><td><span class="pill" style="background:#f59e0b">SHOULD</span></td><td>Comparaison 2 URLs, multi-langue FR/EN/ES</td></tr>
+            <tr><td><span class="pill" style="background:#3b82f6">COULD</span></td><td>Sitemap parsing, comparatif concurrentiel</td></tr>
+            <tr><td><span class="pill" style="background:#64748b">WON'T (V1)</span></td><td>Authentification multi-utilisateur</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Slide 6: Architecture -->
+      <section>
+        <h2>Architecture</h2>
+        <pre style="font-size: 0.45em; line-height: 1.3; background: #1e293b; padding: 20px; border-radius: 8px;"><code>
+   [React 19 + Vite]                            [GitHub Actions CI]
+        │  HTTPS / JSON                         │  pytest, bandit, pip-audit
+        ▼                                       ▼
+   [Flask API Gateway]  ────────────────► [PostgreSQL on Railway]
+        │
+        ├─ WebScraper        ─► (requests + BeautifulSoup + lxml)
+        ├─ SEOAnalyzer       ─► (9 indicateurs scorés)
+        ├─ ContentAnalyzer   ─► (lexical + langdetect)
+        ├─ AIAnalyzer        ─► [OpenAI GPT-4]  ◄─ Cache 24h
+        │                                          [Redis Upstash]
+        └─ ReportGenerator   ─► (fpdf2 PDF, JSON)
+        </code></pre>
+        <p class="small" style="margin-top: 12px;">Monolithe Python, MVC strict, modules de service découplés.</p>
+      </section>
+
+      <!-- Slide 7: Pipeline -->
+      <section>
+        <h2>Pipeline d'analyse</h2>
+        <div class="grid-3" style="margin-top: 20px;">
+          <div class="card"><h3>1. Scraper</h3><p style="font-size:0.65em;">requests + BS4<br><span class="accent">2–5 s</span></p></div>
+          <div class="card"><h3>2. SEO</h3><p style="font-size:0.65em;">9 règles scorées<br><span class="accent">&lt; 100 ms</span></p></div>
+          <div class="card"><h3>3. Contenu</h3><p style="font-size:0.65em;">word count, Flesch, langue<br><span class="accent">&lt; 100 ms</span></p></div>
+          <div class="card"><h3>4. IA</h3><p style="font-size:0.65em;">GPT-4 + cache Redis<br><span class="accent">8–20 s</span></p></div>
+          <div class="card"><h3>5. Score</h3><p style="font-size:0.65em;">40/30/20/10 pondéré<br><span class="accent">&lt; 10 ms</span></p></div>
+          <div class="card"><h3>6. Persist</h3><p style="font-size:0.65em;">SQLAlchemy → Postgres<br><span class="accent">&lt; 50 ms</span></p></div>
+        </div>
+      </section>
+
+      <!-- Slide 8: Choix techniques -->
+      <section>
+        <h2>Choix techniques</h2>
+        <div class="grid-3" style="margin-top: 20px;">
+          <div class="card">
+            <h3>Stack</h3>
+            <p style="font-size:0.7em;">Flask · React 19 · PostgreSQL · Redis · GPT-4</p>
+          </div>
+          <div class="card">
+            <h3>Outils</h3>
+            <p style="font-size:0.7em;">Vite · SQLAlchemy · fpdf2 · BeautifulSoup · pytest</p>
+          </div>
+          <div class="card">
+            <h3>Infra</h3>
+            <p style="font-size:0.7em;">Railway · Upstash · GitHub Actions · bandit · pip-audit</p>
+          </div>
+        </div>
+        <p class="small" style="margin-top: 30px;">Cohérence pédagogique LP DWCA + maturité de l'écosystème.</p>
+      </section>
+
+      <!-- Slide 9: Sécurité -->
+      <section>
+        <h2>Sécurité (OWASP + RGPD)</h2>
+        <div class="grid-2" style="margin-top: 20px;">
+          <div>
+            <h3 style="font-size:0.7em;">OWASP Top 10</h3>
+            <ul style="font-size:0.65em;">
+              <li><span class="check">✓</span> Injection (ORM + prepared)</li>
+              <li><span class="check">✓</span> Crypto (HTTPS forcé)</li>
+              <li><span class="check">✓</span> Headers CSP / HSTS / X-Frame</li>
+              <li><span class="check">✓</span> SSRF protection <span class="pill" style="background:#10b981">FIX 22/05</span></li>
+              <li><span class="check">✓</span> Audit pip-audit + bandit en CI</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="font-size:0.7em;">RGPD by design</h3>
+            <ul style="font-size:0.65em;">
+              <li><span class="check">✓</span> Aucune donnée personnelle collectée</li>
+              <li><span class="check">✓</span> Aucun cookie de tracking</li>
+              <li><span class="check">✓</span> Pas d'IP loggée</li>
+              <li><span class="check">✓</span> Droit à l'oubli implémenté (DELETE)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 10: Métriques -->
+      <section>
+        <h2>Métriques produit</h2>
+        <div class="grid-4" style="margin-top: 30px;">
+          <div class="card center" style="text-align:center;">
+            <div class="big-num">108</div>
+            <p class="small">tests automatisés</p>
+          </div>
+          <div class="card center" style="text-align:center;">
+            <div class="big-num">&lt; 30s</div>
+            <p class="small">latence moyenne</p>
+          </div>
+          <div class="card center" style="text-align:center;">
+            <div class="big-num">$0.03</div>
+            <p class="small">par analyse (cache 80%)</p>
+          </div>
+          <div class="card center" style="text-align:center;">
+            <div class="big-num">99%</div>
+            <p class="small">uptime Railway</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 11: Démo placeholder -->
+      <section class="center" data-background="#0b1220">
+        <h2>Démonstration</h2>
+        <p style="margin-top: 60px; font-size: 0.7em;">
+          🎬 Vidéo de 5 minutes intégrée ici en présentation effective.
+        </p>
+        <p class="small" style="margin-top: 30px;">
+          Backup : <code>https://drive.google.com/...</code>
+        </p>
+      </section>
+
+      <!-- Slide 12: Difficultés -->
+      <section>
+        <h2>3 difficultés → 3 commits</h2>
+        <div class="grid-3" style="margin-top: 20px;">
+          <div class="card">
+            <h3>OpenAI rate limit</h3>
+            <p style="font-size:0.65em;">Solution : cache Redis 24h + retry exponentiel.</p>
+          </div>
+          <div class="card">
+            <h3>PDF URL tronquées</h3>
+            <p style="font-size:0.65em;"><code>multi_cell()</code> au lieu de <code>cell()</code>.</p>
+            <p class="small"><code>ec00946</code></p>
+          </div>
+          <div class="card">
+            <h3>Sites sans &lt;title&gt;</h3>
+            <p style="font-size:0.65em;">Fallback chain : h1 → host → url.</p>
+            <p class="small"><code>51f8f69</code></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 13: Retour d'expérience -->
+      <section>
+        <h2>Apprentissages</h2>
+        <ul style="margin-top: 30px;">
+          <li><strong>MVC strict dès le début</strong> ou refactoring lourd plus tard</li>
+          <li><strong>Prompt engineering</strong> = +50 % qualité subjective des recos IA</li>
+          <li><strong>CI dès le premier commit</strong> ou régressions découvertes tardives</li>
+          <li><strong>Sécurité by design</strong> (SSRF, RGPD), pas en patch a posteriori</li>
+        </ul>
+      </section>
+
+      <!-- Slide 14: Perspectives -->
+      <section>
+        <h2>Perspectives V2 → V3</h2>
+        <div class="grid-2" style="margin-top: 20px;">
+          <div class="card">
+            <h3>V2 (3 mois)</h3>
+            <ul style="font-size:0.7em;">
+              <li>Sitemap parsing (audit en lot)</li>
+              <li>Multi-langue native (FR/EN/ES)</li>
+              <li>Comparatif concurrentiel</li>
+              <li>Streaming SSE des résultats</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>V3 (6+ mois)</h3>
+            <ul style="font-size:0.7em;">
+              <li>SaaS multi-tenant</li>
+              <li>API publique avec rate-limit/clé</li>
+              <li>Embeddings pour similarité</li>
+              <li>Open-source possible</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 15: Compétences UE 6.5 -->
+      <section>
+        <h2>Compétences UE 6.5 démontrées</h2>
+        <ul style="margin-top: 30px;">
+          <li><span class="check">✅</span> Cycle complet : analyse → conception → dev → déploiement → maintenance</li>
+          <li><span class="check">✅</span> Architecture API REST documentée</li>
+          <li><span class="check">✅</span> Bonnes pratiques OWASP et RGPD</li>
+          <li><span class="check">✅</span> Intégration IA générative dans un produit web</li>
+          <li><span class="check">✅</span> Gestion de version, CI/CD, observabilité</li>
+          <li><span class="check">✅</span> Tests unitaires et d'intégration</li>
+        </ul>
+      </section>
+
+      <!-- Slide 16: Remerciements -->
+      <section class="center">
+        <h2>Remerciements</h2>
+        <p style="margin-top: 50px; font-size: 0.8em;">M. <strong>Eric Christoffel</strong> — tuteur du projet</p>
+        <p style="font-size: 0.8em;">Équipe pédagogique LP DWCA — UE 6.1 à 6.5</p>
+        <p style="font-size: 0.8em;">Camarades de la promotion 2025/2026</p>
+        <p style="margin-top: 50px;" class="small">Université de Strasbourg — Service de Formation Continue</p>
+      </section>
+
+      <!-- Slide 17: Q/R -->
+      <section class="center" data-background-gradient="linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%)">
+        <h1>Questions ?</h1>
+        <div style="margin-top: 40px;">
+          <p>github.com/lekesiz/ai-web-content-analyzer</p>
+          <p class="small">mikaillekesiz@gmail.com</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="footer">Mikail Lekesiz · LP DWCA 2025/2026 · Université de Strasbourg</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      controls: true,
+      progress: true,
+      transition: 'slide',
+      backgroundTransition: 'fade',
+      plugins: [ RevealHighlight, RevealNotes ],
+    });
+  </script>
+</body>
+</html>
