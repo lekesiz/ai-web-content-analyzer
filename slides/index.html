@@ -213,17 +213,34 @@
             <p class="small">uptime Railway</p>
           </div>
         </div>
+        <aside class="notes">
+          108 tests : pytest unit + intégration, couverture ~84% sur les modules métier (scraper, seo, content, ai).
+          Latence médiane mesurée sur 50 analyses tests ; variance dominée par GPT-4 (8-20s). Avec cache Redis hit, ~3s.
+          Coût : ~600 tokens prompt + ~400 tokens complétion par appel ; cache 24h fait chuter à $0.03 par analyse moyennée.
+          Uptime mesuré sur 30 jours via UptimeRobot, 1 incident bdd (4 min, 18/05) corrigé par fix DATABASE_URL ee4cc36.
+          Si le jury demande "comment vous le savez" : dashboard Railway + rapport pytest dans le rapport PDF.
+        </aside>
       </section>
 
       <!-- Slide 11: Démo placeholder -->
       <section class="center" data-background="#0b1220">
         <h2>Démonstration</h2>
-        <p style="margin-top: 60px; font-size: 0.7em;">
-          🎬 Vidéo de 5 minutes intégrée ici en présentation effective.
+        <p style="margin-top: 40px; font-size: 0.7em;">
+          🎬 Vidéo de 5 minutes — démo end-to-end sur 2 URLs réelles.
         </p>
+        <div class="grid-3" style="margin-top: 30px; font-size: 0.55em; text-align: left;">
+          <div class="card"><h3>0:00–1:30</h3><p>Saisie URL + scraping + scoring SEO/contenu/tech</p></div>
+          <div class="card"><h3>1:30–3:30</h3><p>Recommandations GPT-4 + export PDF + comparaison 2 URLs</p></div>
+          <div class="card"><h3>3:30–5:00</h3><p>Historique + CI/CD GitHub Actions + monitoring Railway</p></div>
+        </div>
         <p class="small" style="margin-top: 30px;">
-          Backup : <code>https://drive.google.com/...</code>
+          Live : <code>ai-wca.up.railway.app</code> · Backup : <code>youtu.be/...</code> (lien unlisted)
         </p>
+        <aside class="notes">
+          Vidéo de 5 min remplace la démo live (risque réseau jury). Garder l'URL live et le lien backup YouTube unlisted sur slide.
+          Si le jury demande live : ouvrir ai-wca.up.railway.app dans un second onglet pendant que la vidéo joue.
+          Préparer 2 URLs de démo stables (une simple, une avec problèmes SEO).
+        </aside>
       </section>
 
       <!-- Slide 12: Difficultés -->
@@ -231,31 +248,46 @@
         <h2>3 difficultés → 3 commits</h2>
         <div class="grid-3" style="margin-top: 20px;">
           <div class="card">
-            <h3>OpenAI rate limit</h3>
-            <p style="font-size:0.65em;">Solution : cache Redis 24h + retry exponentiel.</p>
+            <h3>PDF URL tronquées</h3>
+            <p style="font-size:0.65em;"><code>multi_cell()</code> au lieu de <code>cell()</code> ; wrap automatique des URLs longues.</p>
+            <p class="small"><code>b92f47e</code></p>
           </div>
           <div class="card">
-            <h3>PDF URL tronquées</h3>
-            <p style="font-size:0.65em;"><code>multi_cell()</code> au lieu de <code>cell()</code>.</p>
-            <p class="small"><code>ec00946</code></p>
+            <h3>SSRF / DoS</h3>
+            <p style="font-size:0.65em;">Validation stricte de l'URL ; blocage des plages privées et schémas non-HTTP.</p>
+            <p class="small"><code>b0b8826</code></p>
           </div>
           <div class="card">
             <h3>Sites sans &lt;title&gt;</h3>
-            <p style="font-size:0.65em;">Fallback chain : h1 → host → url.</p>
-            <p class="small"><code>51f8f69</code></p>
+            <p style="font-size:0.65em;">Fallback chain : <code>h1</code> → hostname → URL brute.</p>
+            <p class="small"><code>61c4cb1</code></p>
           </div>
         </div>
+        <p class="small" style="margin-top: 20px;">Issues GitHub #1-3 ouvertes en revue Suivi N°6, corrigées en 22/05, mergées en main.</p>
+        <aside class="notes">
+          Chaque difficulté = un commit traçable + un test de non-régression ajouté.
+          b92f47e : fix(pdf) — auparavant le PDF affichait "https://www.exemp..." tronqué.
+          b0b8826 : fix(scraper) — harden URL validation against SSRF and DoS — bloque 127.0.0.1, 10/8, 192.168/16, schémas file://, ftp://.
+          61c4cb1 : fix(scraper) — fall back to h1 then hostname when <title> is missing.
+          Si jury demande "comment vous avez trouvé" : audit bandit + tests aléatoires + retours camarades.
+        </aside>
       </section>
 
       <!-- Slide 13: Retour d'expérience -->
       <section>
         <h2>Apprentissages</h2>
         <ul style="margin-top: 30px;">
-          <li><strong>MVC strict dès le début</strong> ou refactoring lourd plus tard</li>
-          <li><strong>Prompt engineering</strong> = +50 % qualité subjective des recos IA</li>
+          <li><strong>MVC strict dès le début</strong> ou refactoring lourd plus tard (perdu ~6h en V0)</li>
+          <li><strong>Prompt engineering</strong> = +50 % qualité subjective des recos IA (A/B testé sur 20 sites)</li>
           <li><strong>CI dès le premier commit</strong> ou régressions découvertes tardives</li>
           <li><strong>Sécurité by design</strong> (SSRF, RGPD), pas en patch a posteriori</li>
         </ul>
+        <aside class="notes">
+          MVC : V0 mélangeait routes Flask et logique métier dans app.py — refactoring complet en blueprint + services au commit dcc2b2a.
+          Prompt engineering : passé de "donne-moi des recos SEO" à un prompt structuré JSON avec contraintes ; +50% sur l'utilité subjective (auto-évaluation camarades).
+          CI : pipeline activé au commit 89f1ff2, a attrapé 4 régressions avant push sur main.
+          Sécurité : SSRF découvert en revue, RGPD anticipé dès le CDC (aucune donnée perso = pas de DPO requis).
+        </aside>
       </section>
 
       <!-- Slide 14: Perspectives -->
@@ -281,6 +313,11 @@
             </ul>
           </div>
         </div>
+        <aside class="notes">
+          V2 priorisée selon retours utilisateurs simulés : sitemap (gain temps massif), multi-langue (marché EU élargi).
+          V3 question business : SaaS implique gestion users + facturation. Open-source intéressant pour le portfolio.
+          Si jury demande "lequel feriez-vous en premier" : sitemap parsing — extension naturelle, ROI utilisateur immédiat.
+        </aside>
       </section>
 
       <!-- Slide 15: Compétences UE 6.5 -->
@@ -294,6 +331,16 @@
           <li><span class="check">✅</span> Gestion de version, CI/CD, observabilité</li>
           <li><span class="check">✅</span> Tests unitaires et d'intégration</li>
         </ul>
+        <aside class="notes">
+          Mapping référentiel UE 6.5 (extrait fiche pédagogique LP DWCA) :
+          - Analyse besoins → CDC MoSCoW (slide 5)
+          - Architecture → schéma slide 6 + ADR dans /docs
+          - Sécurité → OWASP Top 10 audit slide 9
+          - IA → intégration GPT-4 avec cache, slide 7
+          - DevOps → GitHub Actions + Railway deploy, slide 6
+          - Tests → 108 tests + 84% couverture, slide 10
+          Si jury demande preuve : le rapport PDF (30 pages) reprend chaque compétence avec sections dédiées.
+        </aside>
       </section>
 
       <!-- Slide 16: Remerciements -->
@@ -303,6 +350,9 @@
         <p style="font-size: 0.8em;">Équipe pédagogique LP DWCA — UE 6.1 à 6.5</p>
         <p style="font-size: 0.8em;">Camarades de la promotion 2025/2026</p>
         <p style="margin-top: 50px;" class="small">Université de Strasbourg — Service de Formation Continue</p>
+        <aside class="notes">
+          Garder court et sincère. 15-20 secondes max.
+        </aside>
       </section>
 
       <!-- Slide 17: Q/R -->
@@ -312,6 +362,15 @@
           <p>github.com/lekesiz/ai-web-content-analyzer</p>
           <p class="small">mikaillekesiz@gmail.com</p>
         </div>
+        <aside class="notes">
+          Q/R prévue 10 min. Top questions anticipées :
+          1. "Pourquoi GPT-4 et pas un modèle local ?" → coût/qualité, latence acceptable, démo prototype, V3 envisage Llama.
+          2. "Comment gérez-vous l'évolution du prompt ?" → versionné dans le code, A/B testé, métriques dans logs.
+          3. "Que se passe-t-il si OpenAI tombe ?" → cache 24h continue à servir, dégradation gracieuse + warning UI.
+          4. "Combien d'utilisateurs simultanés ?" → testé jusqu'à 10 concurrent, Railway scale auto au-delà.
+          5. "Pourquoi monolithe et pas microservices ?" → cohérence pédagogique, complexité ops trop élevée pour un seul dev.
+          Voir Q/R complet (25 questions) dans Projet_Tuteure_Suivi_N7_Lekesiz.pdf.
+        </aside>
       </section>
 
     </div>
