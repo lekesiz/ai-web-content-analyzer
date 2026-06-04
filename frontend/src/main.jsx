@@ -5,7 +5,7 @@
  * ES6 features used: import/export modules
  */
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 
 // React 18+ createRoot API - renders the root component
