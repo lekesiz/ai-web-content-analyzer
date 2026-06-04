@@ -11,16 +11,19 @@ class AIAnalyzer:
 
     MAX_CONTENT_CHARS = 4000
 
-    def __init__(self, api_key=None):
+    def __init__(self, api_key=None, base_url=None, model=None):
         self.api_key = api_key
         self.client = None
-        self.model = 'gpt-4'
+        self.model = model or 'gpt-4'
         self.available = False
 
         if api_key:
             try:
                 from openai import OpenAI
-                self.client = OpenAI(api_key=api_key)
+                kwargs = {'api_key': api_key}
+                if base_url:
+                    kwargs['base_url'] = base_url
+                self.client = OpenAI(**kwargs)
                 self.available = True
             except Exception as e:
                 logger.warning(f'OpenAI initialization failed: {e}')

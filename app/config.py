@@ -44,6 +44,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _resolve_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    # OpenAI-compatible alternative providers (e.g. Gemini:
+    # https://generativelanguage.googleapis.com/v1beta/openai/ + gemini-2.0-flash)
+    OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL')
+    OPENAI_MODEL = os.getenv('OPENAI_MODEL')
 
 
 class DevelopmentConfig(Config):

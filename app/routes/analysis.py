@@ -43,7 +43,11 @@ def analyze():
 
         # Step 4: AI Analysis
         api_key = current_app.config.get('OPENAI_API_KEY')
-        ai_analyzer = AIAnalyzer(api_key)
+        ai_analyzer = AIAnalyzer(
+            api_key,
+            base_url=current_app.config.get('OPENAI_BASE_URL'),
+            model=current_app.config.get('OPENAI_MODEL'),
+        )
         ai_results = ai_analyzer.run_full_ai_analysis(scraped, seo_results, content_results)
 
         # Step 5: Calculate scores
@@ -115,7 +119,7 @@ def analyze():
                     priority=rec.get('priority', 'medium'),
                     title=rec.get('title', ''),
                     description=rec.get('description', ''),
-                    ai_model='gpt-4',
+                    ai_model=ai_analyzer.model,
                 )
                 db.session.add(ai_rec)
 
